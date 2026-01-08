@@ -22,6 +22,10 @@ COPY . .
 FROM dependencies AS builder
 WORKDIR /app
 
+# Accept build argument for Next.js build-time env vars
+ARG NEXT_PUBLIC_MDK_PREVIEW
+ENV NEXT_PUBLIC_MDK_PREVIEW=${NEXT_PUBLIC_MDK_PREVIEW}
+
 # Build the Next.js app with all env vars available
 RUN npm run build
 
