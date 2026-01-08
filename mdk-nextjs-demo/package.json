@@ -9,7 +9,9 @@
     "lint": "eslint . --ext ts,tsx,js,jsx --max-warnings=0"
   },
   "dependencies": {
-    "@moneydevkit/nextjs": "0.3.0",
+    "@moneydevkit/nextjs": "beta",
+    "@moneydevkit/core": "beta",
+    "@moneydevkit/create": "beta",
     "next": "16.0.7",
     "react": "19.2.0",
     "react-dom": "19.2.0"
