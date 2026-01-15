@@ -12,7 +12,12 @@ function getDefaultHandler() {
   return defaultHandlerPromise;
 }
 
-// Custom webhook handler with proper sync
+// Helper to sleep for a given number of milliseconds
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Custom webhook handler with proper sync and retry logic
 async function handleWebhookWithSync(request: NextRequest): Promise<Response> {
   const body = await request.json();
 
@@ -28,7 +33,7 @@ async function handleWebhookWithSync(request: NextRequest): Promise<Response> {
 
   const providedSecret = request.headers.get(WEBHOOK_SECRET_HEADER);
   if (!providedSecret || providedSecret !== expectedSecret) {
-    console.error('[webhook] Unauthorized webhook request');
+    console.error('[webhook] Unauthorized webhook request. Expected:', expectedSecret.substring(0, 8) + '..., Got:', providedSecret?.substring(0, 8) + '...');
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
@@ -36,32 +41,52 @@ async function handleWebhookWithSync(request: NextRequest): Promise<Response> {
   }
 
   if (body.event !== 'incoming-payment') {
-    console.error('[webhook] Unknown event type:', body.event);
+    console.log('[webhook] Unknown event type:', body.event);
     return new Response('OK', { status: 200 });
   }
 
-  console.log('[webhook] Processing incoming-payment event with node sync');
+  console.log('[webhook] Processing incoming-payment event with node sync and retry');
 
   try {
     // Dynamically import to avoid bundling issues
     const { createMoneyDevKitNode, createMoneyDevKitClient, markPaymentReceived } = await import("@moneydevkit/core");
 
-    const node = createMoneyDevKitNode();
     const client = createMoneyDevKitClient();
 
-    // CRITICAL: Sync wallets BEFORE checking for payments
-    // This ensures the node has the latest blockchain state
-    console.log('[webhook] Syncing wallets...');
-    node.syncWallets();
-    console.log('[webhook] Wallet sync complete');
+    // Retry logic: try up to 5 times with increasing delays
+    const maxRetries = 5;
+    const delays = [1000, 2000, 3000, 5000, 8000]; // Total: up to 19 seconds of waiting
 
-    // Now receive payments with the synced state
-    console.log('[webhook] Checking for received payments...');
-    const payments = node.receivePayments();
-    console.log(`[webhook] Found ${payments.length} payment(s)`);
+    let payments: Array<{ paymentHash: string; amount: number }> = [];
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      // Create a fresh node instance for each attempt
+      const node = createMoneyDevKitNode();
+
+      // CRITICAL: Sync wallets BEFORE checking for payments
+      console.log(`[webhook] Attempt ${attempt + 1}/${maxRetries}: Syncing wallets...`);
+      node.syncWallets();
+      console.log(`[webhook] Attempt ${attempt + 1}/${maxRetries}: Wallet sync complete`);
+
+      // Now receive payments with the synced state
+      console.log(`[webhook] Attempt ${attempt + 1}/${maxRetries}: Checking for received payments...`);
+      payments = node.receivePayments();
+      console.log(`[webhook] Attempt ${attempt + 1}/${maxRetries}: Found ${payments.length} payment(s)`);
+
+      if (payments.length > 0) {
+        break; // Found payments, exit retry loop
+      }
+
+      // If no payments found and we have more retries, wait before trying again
+      if (attempt < maxRetries - 1) {
+        const delayMs = delays[attempt];
+        console.log(`[webhook] No payments found, waiting ${delayMs}ms before retry...`);
+        await sleep(delayMs);
+      }
+    }
 
     if (payments.length === 0) {
-      console.log('[webhook] No payments to process');
+      console.log('[webhook] No payments found after all retries');
       return new Response('OK', { status: 200 });
     }
 
