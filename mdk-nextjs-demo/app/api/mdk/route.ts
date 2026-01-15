@@ -44,8 +44,7 @@ async function handleWebhookWithSync(request: NextRequest): Promise<Response> {
 
   try {
     // Dynamically import to avoid bundling issues
-    const { createMoneyDevKitNode, createMoneyDevKitClient } = await import("@moneydevkit/core");
-    const { markPaymentReceived } = await import("@moneydevkit/core/payment-state");
+    const { createMoneyDevKitNode, createMoneyDevKitClient, markPaymentReceived } = await import("@moneydevkit/core");
 
     const node = createMoneyDevKitNode();
     const client = createMoneyDevKitClient();
