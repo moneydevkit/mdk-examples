@@ -9,8 +9,9 @@ WORKDIR /app
 # Install curl and jq for healthchecks and JSON manipulation
 RUN apk add --no-cache curl libc6-compat jq
 
-# Copy package files
+# Copy package files and local packages
 COPY package.json package-lock.json* ./
+COPY local-packages ./local-packages
 
 # Copy local tarball dependencies (created by CI when testing PRs from mdk-checkout)
 # These files are always created by the e2e-reusable workflow before building this image.

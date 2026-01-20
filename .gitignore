@@ -19,6 +19,7 @@ coverage
 .idea
 .vscode
 *.tgz
+!**/local-packages/*.tgz
 .secrets
 .envrc
 .direnv
