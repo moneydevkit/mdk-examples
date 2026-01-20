@@ -12,6 +12,12 @@ RUN apk add --no-cache curl libc6-compat jq
 # Copy package files
 COPY package.json package-lock.json* ./
 
+# Copy local tarball dependencies (created by CI when testing PRs from mdk-checkout)
+# These files are always created by the e2e-reusable workflow before building this image.
+# The workflow renames the packed tarballs to these exact names (lines 67-68 in e2e-reusable.yml)
+COPY moneydevkit-core-local.tgz ./
+COPY moneydevkit-nextjs-local.tgz ./
+
 # Install dependencies
 RUN npm install
 
