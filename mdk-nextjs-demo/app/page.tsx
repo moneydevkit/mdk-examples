@@ -1,6 +1,6 @@
 'use client';
 
-import { useCheckout, useProducts } from "@moneydevkit/nextjs";
+import { useCheckout } from "@moneydevkit/nextjs";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -21,7 +21,6 @@ export default function HomePage() {
   const [customerName, setCustomerName] = useState("Satoshi Nakamoto");
   const [note, setNote] = useState("Fast IBD snapshot with hosted checkout.");
   const { navigate, isNavigating } = useCheckout();
-  const { products, isLoading: productsLoading } = useProducts();
 
   const metadata = useMemo(
     () => ({
@@ -39,26 +38,6 @@ export default function HomePage() {
       description: "A quick Money Dev Kit checkout running on Vercel.",
       amount: 2500,
       currency: "USD",
-      metadata,
-      checkoutPath: "/checkout",
-    });
-  };
-
-  const handleProductCheckout = () => {
-    if (products.length === 0) return;
-    navigate({
-      // Single product checkout - uses first available product
-      productId: products[0].id,
-      metadata,
-      checkoutPath: "/checkout",
-    });
-  };
-
-  const handleMultiProductCheckout = () => {
-    if (products.length < 2) return;
-    navigate({
-      // Multiple products checkout - uses first two available products
-      products: [products[0].id, products[1].id],
       metadata,
       checkoutPath: "/checkout",
     });
@@ -116,30 +95,8 @@ export default function HomePage() {
                 disabled={isNavigating}
                 data-test="start-checkout"
               >
-                {isNavigating ? "Creating checkout…" : "Launch checkout (Amount)"}
+                {isNavigating ? "Creating checkout…" : "Launch checkout"}
               </button>
-              {products.length >= 1 && (
-                <button
-                  type="button"
-                  className="button"
-                  onClick={handleProductCheckout}
-                  disabled={isNavigating || productsLoading}
-                  style={{ marginTop: "0.5rem", background: "#2563eb" }}
-                >
-                  {isNavigating ? "Creating checkout…" : `Launch checkout (${products[0].name})`}
-                </button>
-              )}
-              {products.length >= 2 && (
-                <button
-                  type="button"
-                  className="button"
-                  onClick={handleMultiProductCheckout}
-                  disabled={isNavigating || productsLoading}
-                  style={{ marginTop: "0.5rem", background: "#7c3aed" }}
-                >
-                  {isNavigating ? "Creating checkout…" : "Launch checkout (2 Products)"}
-                </button>
-              )}
               <p className="hint">
                 We create a checkout session with the values above and redirect to
                 {" /checkout/[id] "} using <code>useCheckout</code>.
