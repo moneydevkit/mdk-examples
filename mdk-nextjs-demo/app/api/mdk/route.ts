@@ -1,1 +1,1 @@
-export { POST } from "@moneydevkit/nextjs/server/route";
+export { POST, GET } from "@moneydevkit/nextjs/server/route";

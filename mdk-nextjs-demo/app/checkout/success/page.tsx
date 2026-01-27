@@ -51,9 +51,17 @@ function SuccessContent() {
         >
           {JSON.stringify(metadata, null, 2)}
         </pre>
-        <Link href="/" className="button" style={{ width: "fit-content" }}>
-          Back to start
-        </Link>
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+          <Link href="/" className="button" style={{ width: "fit-content" }}>
+            Back to start
+          </Link>
+          <Link href="/account" className="button" style={{ width: "fit-content", background: "rgba(139, 92, 246, 0.3)" }}>
+            View Account →
+          </Link>
+        </div>
+        <p className="hint" style={{ marginTop: "0.5rem" }}>
+          If you completed a subscription checkout, view your subscription on the account page.
+        </p>
       </div>
     </>
   );

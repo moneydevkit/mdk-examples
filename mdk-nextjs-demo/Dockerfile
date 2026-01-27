@@ -6,17 +6,23 @@ FROM node:20-alpine AS base
 FROM base AS dependencies
 WORKDIR /app
 
-# Install curl and jq for healthchecks and JSON manipulation
-RUN apk add --no-cache curl libc6-compat jq
+# Install curl for healthchecks
+RUN apk add --no-cache curl libc6-compat
 
-# Copy package files
-COPY package.json package-lock.json* ./
+# Copy demo app (context is moneydevkit/)
+COPY lightning-node/examples/mdk-nextjs-demo/ .
 
-# Install dependencies
+# Install all dependencies from npm (including @moneydevkit packages for their dependency tree)
 RUN npm install
 
-# Copy the rest of the app
-COPY . .
+# Overwrite @moneydevkit packages with local pre-built versions
+# Copy core package
+COPY lightning-node/mdk-checkout/packages/core/dist ./node_modules/@moneydevkit/core/dist
+COPY lightning-node/mdk-checkout/packages/core/package.json ./node_modules/@moneydevkit/core/package.json
+
+# Copy nextjs package
+COPY lightning-node/mdk-checkout/packages/nextjs/dist ./node_modules/@moneydevkit/nextjs/dist
+COPY lightning-node/mdk-checkout/packages/nextjs/package.json ./node_modules/@moneydevkit/nextjs/package.json
 
 # Builder stage - creates production build
 FROM dependencies AS builder

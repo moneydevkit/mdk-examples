@@ -9,9 +9,10 @@
     "lint": "eslint . --ext ts,tsx,js,jsx --max-warnings=0"
   },
   "dependencies": {
-    "@moneydevkit/nextjs": "beta",
     "@moneydevkit/core": "beta",
     "@moneydevkit/create": "beta",
+    "@moneydevkit/lightning-js": "^0.1.63",
+    "@moneydevkit/nextjs": "beta",
     "next": "16.0.7",
     "react": "19.2.0",
     "react-dom": "19.2.0"
