@@ -10,8 +10,6 @@
   },
   "dependencies": {
     "@moneydevkit/core": "beta",
-    "@moneydevkit/create": "beta",
-    "@moneydevkit/lightning-js": "^0.1.63",
     "@moneydevkit/nextjs": "beta",
     "next": "16.0.7",
     "react": "19.2.0",

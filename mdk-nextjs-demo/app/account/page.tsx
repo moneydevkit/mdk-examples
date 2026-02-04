@@ -1,11 +1,11 @@
 'use client';
 
-import { useCustomer, type CustomerData } from "@moneydevkit/nextjs";
+import { useCustomer } from "@moneydevkit/nextjs";
 import Link from "next/link";
 import { useState } from "react";
 
 // Extended customer type to handle all possible fields from the API
-interface ExtendedCustomer extends Omit<CustomerData, 'hasActiveSubscription'> {
+interface ExtendedCustomer {
   id?: string;
   email?: string | null;
   name?: string | null;

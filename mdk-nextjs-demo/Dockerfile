@@ -9,20 +9,25 @@ WORKDIR /app
 # Install curl for healthchecks
 RUN apk add --no-cache curl libc6-compat
 
-# Copy demo app (context is moneydevkit/)
-COPY lightning-node/examples/mdk-nextjs-demo/ .
+# Copy demo app (context is lightning-node/)
+COPY examples/mdk-nextjs-demo/ .
 
 # Install all dependencies from npm (including @moneydevkit packages for their dependency tree)
-RUN npm install
+# Also install the correct versions of api-contract and lightning-js needed by local packages
+RUN npm install && npm install @moneydevkit/api-contract@^0.1.19 @moneydevkit/lightning-js@^0.1.65 --save
 
 # Overwrite @moneydevkit packages with local pre-built versions
+# This must happen AFTER npm install since npm install can overwrite node_modules
 # Copy core package
-COPY lightning-node/mdk-checkout/packages/core/dist ./node_modules/@moneydevkit/core/dist
-COPY lightning-node/mdk-checkout/packages/core/package.json ./node_modules/@moneydevkit/core/package.json
+COPY mdk-checkout/packages/core/dist ./node_modules/@moneydevkit/core/dist
+COPY mdk-checkout/packages/core/package.json ./node_modules/@moneydevkit/core/package.json
 
 # Copy nextjs package
-COPY lightning-node/mdk-checkout/packages/nextjs/dist ./node_modules/@moneydevkit/nextjs/dist
-COPY lightning-node/mdk-checkout/packages/nextjs/package.json ./node_modules/@moneydevkit/nextjs/package.json
+COPY mdk-checkout/packages/nextjs/dist ./node_modules/@moneydevkit/nextjs/dist
+COPY mdk-checkout/packages/nextjs/package.json ./node_modules/@moneydevkit/nextjs/package.json
+
+# Remove nested api-contract in core so it uses the top-level (correct) version
+RUN rm -rf ./node_modules/@moneydevkit/core/node_modules/@moneydevkit/api-contract
 
 # Builder stage - creates production build
 FROM dependencies AS builder
